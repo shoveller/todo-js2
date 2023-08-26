@@ -1,78 +1,164 @@
 import "./App.css";
 import { create } from "zustand";
+import { immer } from "zustand/middleware/immer";
 
-const useTodoList = create((set) => {
-  return {
-    // 상태
-    list: [
-      {
-        id: new Date().getTime(),
-        todo: "투두",
-        completed: false,
-      },
-    ],
-    // 액션
-    createTodo: (todo) => {
-      set((state) => {
-        const newList = [
-          ...state.list,
-          {
+// const useTodoList = create((set) => {
+//   return {
+//     // 상태
+//     list: [
+//       {
+//         id: new Date().getTime(),
+//         todo: "투두",
+//         completed: false,
+//       },
+//     ],
+//     // 액션
+//     createTodo: (todo) => {
+//       set((state) => {
+//         const newList = [
+//           ...state.list,
+//           {
+//             id: new Date().getTime(),
+//             todo,
+//             completed: false,
+//           },
+//         ];
+
+//         // set 함수를 호출할때의 규칙
+//         // 반드시 온전한 state를 반환해라!
+//         return {
+//           ...state,
+//           list: newList,
+//         };
+//       });
+//     },
+//     updateTodo: (id) => {
+//       set((state) => {
+//         const newList = state.list.map((data) => {
+//           if (data.id === id) {
+//             return {
+//               ...data,
+//               completed: !data.completed,
+//             };
+//           }
+
+//           return data;
+//         });
+
+//         // set 함수를 호출할때의 규칙
+//         // 반드시 온전한 state를 반환해라!
+//         return {
+//           ...state,
+//           list: newList,
+//         };
+//       });
+//     },
+//     deleteTodo: (id) => {
+//       set((state) => {
+//         // set 함수를 호출할때의 규칙
+//         // 반드시 온전한 state를 반환해라!
+//         const newList = state.list.filter((data) => {
+//           // false 를 리턴하면 배열에서 제외
+//           if (data.id === id) {
+//             return false;
+//           }
+//           // true 를 리턴하면 배열안에 포함
+//           return true;
+//         });
+
+//         return {
+//           ...state,
+//           list: newList,
+//         };
+//       });
+//     },
+//   };
+// });
+
+const useTodoList = create(
+  immer((set) => {
+    return {
+      // 상태
+      list: [
+        {
+          id: new Date().getTime(),
+          todo: "투두",
+          completed: false,
+        },
+      ],
+      // 액션
+      createTodo: (todo) => {
+        set((state) => {
+          // const newList = [
+          //   ...state.list,
+          //   {
+          //     id: new Date().getTime(),
+          //     todo,
+          //     completed: false,
+          //   },
+          // ];
+          // return {
+          //   ...state,
+          //   list: newList,
+          // };
+
+          state.list.push({
             id: new Date().getTime(),
             todo,
             completed: false,
-          },
-        ];
-
-        // set 함수를 호출할때의 규칙
-        // 반드시 온전한 state를 반환해라!
-        return {
-          ...state,
-          list: newList,
-        };
-      });
-    },
-    updateTodo: (id) => {
-      set((state) => {
-        const newList = state.list.map((data) => {
-          if (data.id === id) {
-            return {
-              ...data,
-              completed: !data.completed,
-            };
-          }
-
-          return data;
+          });
         });
+      },
+      updateTodo: (id) => {
+        // set((state) => {
+        //   const newList = state.list.map((data) => {
+        //     if (data.id === id) {
+        //       return {
+        //         ...data,
+        //         completed: !data.completed,
+        //       };
+        //     }
 
-        // set 함수를 호출할때의 규칙
-        // 반드시 온전한 state를 반환해라!
-        return {
-          ...state,
-          list: newList,
-        };
-      });
-    },
-    deleteTodo: (id) => {
-      set((state) => {
-        // set 함수를 호출할때의 규칙
-        // 반드시 온전한 state를 반환해라!
-        const newList = state.list.filter((data) => {
-          // false 를 리턴하면 배열에서 제외
-          if (data.id === id) {
-            return false;
-          }
-          // true 를 리턴하면 배열안에 포함
-          return true;
+        //     return data;
+        //   });
+        //   return {
+        //     ...state,
+        //     list: newList,
+        //   };
+        // });
+        set((state) => {
+          const index = state.list.findIndex((item) => {
+            return item.id === id;
+          });
+          state.list[index].completed = !state.list[index].completed;
         });
+      },
+      deleteTodo: (id) => {
+        set((state) => {
+          // // set 함수를 호출할때의 규칙
+          // // 반드시 온전한 state를 반환해라!
+          // const newList = state.list.filter((data) => {
+          //   // false 를 리턴하면 배열에서 제외
+          //   if (data.id === id) {
+          //     return false;
+          //   }
+          //   // true 를 리턴하면 배열안에 포함
+          //   return true;
+          // });
 
-        return {
-          ...state,
-          list: newList,
-        };
-      });
-    },
-  };
-});
+          // return {
+          //   ...state,
+          //   list: newList,
+          // };
+          const index = state.list.findIndex((item) => {
+            return item.id === id;
+          });
+          state.list.splice(index);
+        });
+      },
+    };
+  })
+);
 
 function App() {
   const { list, createTodo, updateTodo, deleteTodo } = useTodoList();
