@@ -1,32 +1,132 @@
-import { create } from "zustand";
 import "./App.css";
+import { create } from "zustand";
 
-const useListStore = create((set) => {
-  // 프로그램 전체에서 사용할 전체 상태의 트리
+const useTodoList = create((set) => {
   return {
+    // 상태
     list: [
       {
-        id: "1",
+        id: new Date().getTime(),
         todo: "투두",
         completed: false,
       },
     ],
-    complete: (id, completed) => {
-      // setState
+    // 액션
+    createTodo: (todo) => {
       set((state) => {
-        state.list; // 값
-        state.complete; // 액션
+        const newList = [
+          ...state.list,
+          {
+            id: new Date().getTime(),
+            todo,
+            completed: false,
+          },
+        ];
 
-        // 우리가 해 줄 일은
-        // set 함수 안에서 state를 반환하는 것
-        return state;
+        // set 함수를 호출할때의 규칙
+        // 반드시 온전한 state를 반환해라!
+        return {
+          ...state,
+          list: newList,
+        };
+      });
+    },
+    updateTodo: (id) => {
+      set((state) => {
+        const newList = state.list.map((data) => {
+          if (data.id === id) {
+            return {
+              ...data,
+              completed: !data.completed,
+            };
+          }
+
+          return data;
+        });
+
+        // set 함수를 호출할때의 규칙
+        // 반드시 온전한 state를 반환해라!
+        return {
+          ...state,
+          list: newList,
+        };
+      });
+    },
+    deleteTodo: (id) => {
+      set((state) => {
+        // set 함수를 호출할때의 규칙
+        // 반드시 온전한 state를 반환해라!
+        const newList = state.list.filter((data) => {
+          // false 를 리턴하면 배열에서 제외
+          if (data.id === id) {
+            return false;
+          }
+          // true 를 리턴하면 배열안에 포함
+          return true;
+        });
+
+        return {
+          ...state,
+          list: newList,
+        };
       });
     },
   };
 });
 
 function App() {
-  const { list, complete } = useListStore();
+  const { list, createTodo, updateTodo, deleteTodo } = useTodoList();
+  // const [list, setList] = useState([
+  //   {
+  //     id: new Date().getTime(),
+  //     todo: "투두",
+  //     completed: false,
+  //   },
+  // ]);
+  const onSubmit = (e) => {
+    e.preventDefault();
+    // 값을 가공하는 부분[s]
+    // 폼을 가져오고
+    const form = e.currentTarget;
+    // 폼 데이터로 만들고
+    const formData = new FormData(form);
+    // input 의 값을 읽어온 다음에
+    const todo = formData.get("todo");
+    // 값을 가공하는 부분[e]
+
+    // zustand 액션 호출!
+    // 값만 넘기는게 포인트
+    createTodo(todo);
+
+    // 폼 리셋
+    form.reset();
+  };
+  console.log(list);
+  // const complete = (id) => {
+  // const newList = list.map((data) => {
+  //   if (data.id === id) {
+  //     return {
+  //       ...data,
+  //       completed: !data.completed,
+  //     };
+  //   }
+
+  //   return data;
+  // });
+  //   setList(newList);
+  // };
+  // const deleteTodo = (id) => {
+  //   const newList = list.filter((data) => {
+  //     // false 를 리턴하면 배열에서 제외
+  //     if (data.id === id) {
+  //       return false;
+  //     }
+  //     // true 를 리턴하면 배열안에 포함
+  //     return true;
+  //   });
+
+  //   setList(newList);
+  // };
 
   return (
     <div className="flex items-center justify-center w-screen h-screen font-medium">
@@ -50,8 +150,8 @@ function App() {
             <h4 className="font-semibold ml-3 text-lg">Todo List</h4>
           </div>
           {list.map((data, index) => {
-            const { id, todo, completed } = data;
-            const key = `${id}_${index}`;
+            const key = `${data.id}_${index}`;
+            const { todo, id, completed } = data;
 
             return (
               <div className="group" key={key}>
@@ -60,9 +160,10 @@ function App() {
                     name="hidden-check"
                     className="hidden peer"
                     type="checkbox"
+                    defaultChecked={completed}
                   />
                   <span
-                    onClick={() => complete(id, completed)}
+                    onClick={() => updateTodo(id)}
                     name="check"
                     className="peer-checked:bg-green-500 peer-checked:border-green-500 peer-checked:text-white flex items-center justify-center w-5 h-5 text-transparent border-2 border-gray-500 rounded-full"
                   >
@@ -85,7 +186,11 @@ function App() {
                   >
                     {todo}
                   </span>
-                  <button name="delete" className="hidden group-hover:block">
+                  <button
+                    onClick={() => deleteTodo(id)}
+                    name="delete"
+                    className="hidden group-hover:block"
+                  >
                     <svg
                       className="w-5 h-5 text-gray-400 fill-current mx-1"
                       version="1.1"
@@ -106,12 +211,12 @@ function App() {
               </div>
             );
           })}
-          {/* form[s] */}
-          <form>
+          <form onSubmit={onSubmit}>
             <div className="flex items-center w-full mt-2">
               {/* submit button[s] */}
               <button
                 id="submit"
+                type="submit"
                 className="h-8 px-2 text-sm font-medium rounded"
               >
                 <svg
@@ -142,7 +247,7 @@ function App() {
               {/* todo input[e] */}
               {/* reset button[s] */}
               <button
-                id="reset"
+                type="reset"
                 className="peer-invalid/todo:hidden h-8 px-2 text-sm font-medium rounded"
               >
                 <svg
