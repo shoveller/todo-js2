@@ -4,7 +4,6 @@ import "./App.css";
 function App() {
   const ref = useRef();
   const [todoList, setTodoList] = useState([]);
-
   const onClick = () => {
     setTodoList([...todoList, ref.current.value]);
   };
