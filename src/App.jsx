@@ -12,7 +12,15 @@ const useListStore = create((set) => {
       },
     ],
     complete: (id, completed) => {
-      debugger;
+      // setState
+      set((state) => {
+        state.list; // 값
+        state.complete; // 액션
+
+        // 우리가 해 줄 일은
+        // set 함수 안에서 state를 반환하는 것
+        return state;
+      });
     },
   };
 });
